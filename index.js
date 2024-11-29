@@ -25,9 +25,11 @@ exports.addTodo = onRequest(async (req, res) => {
 exports.getTodo = onRequest(async (req, res) => {
   try {
     const col = await getFirestore().collection("todo").get();
-    const result = {};
+    const result = [];
     for (const doc of col.docs) {
-      result[doc.id] = doc.data();
+      const data = doc.data();
+      data["id"] = doc.id;
+      result.push(data);
     }
 
     res.status(200).json(result);
