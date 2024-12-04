@@ -11,12 +11,52 @@ initializeApp();
 
 // Take the text parameter passed to this HTTP endpoint and insert it into
 // Firestore under the path /messages/:documentId/original
+exports.addTodo = onRequest(async (req, res) => {
+  try {
+    const body = req.body;
+    const result = await getFirestore().collection("todo").add(body);
+
+    res.status(201).json({ id: result.id });
+  } catch (err) {
+    res.status(500).json(err.message);
+  }
+});
+
+exports.getTodo = onRequest(async (req, res) => {
+  try {
+    const col = await getFirestore().collection("todo").get();
+    const result = [];
+    for (const doc of col.docs) {
+      const data = doc.data();
+      data["id"] = doc.id;
+      result.push(data);
+    }
+
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json(err.message);
+  }
+});
+
+exports.updateTodo = onRequest(async (req, res) => {
+  try {
+    const docId = req.params["0"];
+    const body = req.body;
+    const result = await getFirestore()
+      .doc("todo/" + docId)
+      .update(body);
+
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json(err.message);
+  }
+});
+
 exports.addTodoV2 = onCall(
   {
     enforceAppCheck: true,
   },
   async (req, res) => {
-    console.log(req);
     try {
       const body = req.body;
       const result = await getFirestore().collection("todo").add(body);
