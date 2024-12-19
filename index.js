@@ -11,46 +11,60 @@ initializeApp();
 
 // Take the text parameter passed to this HTTP endpoint and insert it into
 // Firestore under the path /messages/:documentId/original
-exports.addTodo = onRequest(async (req, res) => {
-  try {
-    const body = req.body;
-    const result = await getFirestore().collection("todo").add(body);
+exports.addTodo = onRequest(
+  { cors: "http://localhost:5173" },
+  async (req, res) => {
+    res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+    try {
+      const body = req.body;
+      const result = await getFirestore().collection("todo").add(body);
 
-    res.status(201).json({ id: result.id });
-  } catch (err) {
-    res.status(500).json(err.message);
-  }
-});
-
-exports.getTodo = onRequest(async (req, res) => {
-  try {
-    const col = await getFirestore().collection("todo").get();
-    const result = [];
-    for (const doc of col.docs) {
-      const data = doc.data();
-      data["id"] = doc.id;
-      result.push(data);
+      res.status(201).json({ id: result.id });
+    } catch (err) {
+      res.status(500).json(err.message);
     }
-
-    res.status(200).json(result);
-  } catch (err) {
-    res.status(500).json(err.message);
   }
-});
+);
 
-exports.updateTodo = onRequest(async (req, res) => {
-  try {
-    const docId = req.params["0"];
-    const body = req.body;
-    const result = await getFirestore()
-      .doc("todo/" + docId)
-      .update(body);
+exports.getTodo = onRequest(
+  { cors: "http://localhost:5173" },
+  async (req, res) => {
+    res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+    try {
+      const col = await getFirestore().collection("todo").get();
+      const result = [];
+      for (const doc of col.docs) {
+        const data = doc.data();
+        data["id"] = doc.id;
+        result.push(data);
+      }
 
-    res.status(200).json(result);
-  } catch (err) {
-    res.status(500).json(err.message);
+      result.sort((a, b) => a.idx - b.idx);
+
+      res.status(200).json(result);
+    } catch (err) {
+      res.status(500).json(err.message);
+    }
   }
-});
+);
+
+exports.updateTodo = onRequest(
+  { cors: "http://localhost:5173" },
+  async (req, res) => {
+    res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+    try {
+      const docId = req.params["0"];
+      const body = req.body;
+      const result = await getFirestore()
+        .doc("todo/" + docId)
+        .update(body);
+
+      res.status(200).json(result);
+    } catch (err) {
+      res.status(500).json(err.message);
+    }
+  }
+);
 
 exports.addTodoV2 = onCall(
   {
